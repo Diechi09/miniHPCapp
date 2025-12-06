@@ -1,6 +1,8 @@
+// heat_serial.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <omp.h>
 
 #define NX 500
 #define NY 500
@@ -14,17 +16,19 @@ int main(void) {
     int i, j, iter;
     double diff, max_diff;
 
-    /* Initialize the grid */
+    // Initialize the grid
     for (i = 0; i < NX; i++) {
         for (j = 0; j < NY; j++) {
             u[i][j] = 0.0;
             if (i == 0 || i == NX - 1 || j == 0 || j == NY - 1) {
-                u[i][j] = 100.0; /* Boundary conditions */
+                u[i][j] = 100.0;  // Boundary conditions
             }
         }
     }
 
-    /* Iterative solver */
+    double start = omp_get_wtime();
+
+    // Iterative solver
     for (iter = 0; iter < MAX_ITER; iter++) {
         max_diff = 0.0;
 
@@ -39,19 +43,22 @@ int main(void) {
             }
         }
 
-        /* Update u */
+        // Update u
         for (i = 1; i < NX - 1; i++) {
             for (j = 1; j < NY - 1; j++) {
                 u[i][j] = u_new[i][j];
             }
         }
 
-        /* Check for convergence */
+        // Check for convergence
         if (max_diff < TOLERANCE) {
-            printf("Converged after %d iterations.\n", iter);
+            printf("Serial converged after %d iterations.\n", iter);
             break;
         }
     }
+
+    double end = omp_get_wtime();
+    printf("Serial elapsed time: %f seconds\n", end - start);
 
     return 0;
 }
